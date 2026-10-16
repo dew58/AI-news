@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  AI Daily News Digest — News Sources Configuration
+#  Edit this file to add/remove/change any source without touching code.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── RSS Feeds (Articles) ──────────────────────────────────────────────────────
+rss_feeds:
+  TechCrunch AI:       "https://techcrunch.com/category/artificial-intelligence/feed/"
+  ArXiv CS.AI:         "https://rss.arxiv.org/rss/cs.AI"
+  ArXiv CS.LG:         "https://rss.arxiv.org/rss/cs.LG"
+  Wired:               "https://www.wired.com/feed/rss"
+  MIT Tech Review:     "https://www.technologyreview.com/feed/"
+  The Verge:           "https://www.theverge.com/rss/index.xml"
+  VentureBeat AI:      "https://venturebeat.com/category/ai/feed/"
+  Hacker News Blog:    "https://hnrss.org/frontpage"
+
+# ── Official AI Company Blogs ─────────────────────────────────────────────────
+# NOTE: Anthropic has no official RSS feed. We use a community RSSHub mirror.
+blog_feeds:
+  OpenAI:              "https://openai.com/news/rss.xml"
+  Anthropic:           "https://rsshub.app/anthropic/news"  # community mirror via RSSHub
+  Google DeepMind:     "https://deepmind.google/blog/rss.xml"
+  Hugging Face:        "https://huggingface.co/blog/feed.xml"
+  Mistral AI:          "https://mistral.ai/news/rss/"
+
+# ── YouTube Channels ──────────────────────────────────────────────────────────
+# channel_id can be found in the channel URL: youtube.com/channel/<channel_id>
+youtube_channels:
+  Two Minute Papers:   "UCbfYPyITQ-7l4upoX8nvctg"
+  Google DeepMind:     "UCP4bf6IHJJQehibu6ai__cg"
+  OpenAI:              "UCXZCJLdBC09xxGZ6gcdrc6A"
+  Yannic Kilcher:      "UCZHmQk67mSJgfCCTn7xBfew"
+  Lex Fridman:         "UCSHZKyawb77ixDdsGog4iWA"
+  AI Explained:        "UCNJ1Ymd5yFuUPtn21xtRbbw"
+
+# ── LinkedIn RSS Bridges ──────────────────────────────────────────────────────
+# LinkedIn has no public API. Use an RSS bridge like RSSHub (self-hosted or public).
+# Format: "Name": "https://rsshub.app/linkedin/company/<company-slug>"
+# Leave empty {} if not using LinkedIn.
+linkedin_feeds:
+  {}
+  # OpenAI Company:   "https://rsshub.app/linkedin/company/openai"
+  # Anthropic:        "https://rsshub.app/linkedin/company/anthropic"
+
+# ── Collection Windows ────────────────────────────────────────────────────────
+settings:
+  rss_max_age_hours:   24    # Only include RSS articles from last N hours
+  blog_max_age_hours:  72    # Blogs post less frequently, use wider window
+  hn_top_stories:      30    # How many top HN stories to pull
+  youtube_max_per_ch:  5     # Max videos per YouTube channel

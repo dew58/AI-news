@@ -1,0 +1,30 @@
+[project]
+name = "ai-news"
+version = "0.1.0"
+description = "AI-powered daily news digest — collects, analyzes, and delivers AI & tech news via email"
+readme = "README.md"
+authors = [
+    { name = "dew58", email = "newg2001@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    # ── Phase 1: Collectors ──────────────────────────────────
+    "feedparser>=6.0.11",            # RSS feed parsing
+    "requests>=2.32.0",              # HTTP requests
+    "youtube-transcript-api>=1.0.3", # YouTube video transcripts
+    "python-dotenv>=1.0.0",          # Load .env files
+    "pyyaml>=6.0.2",                 # Parse sources.yaml config
+    # ── Phase 2: LLM Analyzer ────────────────────────────────
+    "google-generativeai>=0.8.0",    # Google Gemini API
+    # ── Phase 3: Email Digest ────────────────────────────────
+    "jinja2>=3.1.4",                 # HTML email templates
+    # ── Phase 4: Scheduler ───────────────────────────────────
+    "apscheduler>=3.10.4",           # Job scheduling
+]
+
+[project.scripts]
+ai-news = "ai_news.pipeline:main"
+
+[build-system]
+requires = ["uv_build>=0.12.24,<0.13.0"]
+build-backend = "uv_build"
