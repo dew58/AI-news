@@ -1,7 +1,41 @@
-<!-- 
-  AI Daily News Digest — HTML Email Template (Phase 3)
-  [NOT YET IMPLEMENTED]
-  
-  This Jinja2 template will be rendered by email_builder.py 
-  to produce the final HTML email digest.
--->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI &amp; Tech Daily Digest — {{ digest_date }}</title>
+</head>
+<body style="margin:0; padding:0; background:#f3f5f8; color:#172033; font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none; max-height:0; overflow:hidden;">Your AI and technology news digest for {{ digest_date }}.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f5f8;">
+    <tr><td align="center" style="padding:28px 12px;">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:100%; max-width:640px; background:#fff; border-radius:14px; overflow:hidden;">
+        <tr><td style="padding:30px 32px; background:#172554; color:#fff;">
+          <p style="margin:0 0 8px; color:#bfdbfe; font-size:12px; letter-spacing:1.5px; text-transform:uppercase;">Daily briefing</p>
+          <h1 style="margin:0; font-size:26px; line-height:1.25;">AI &amp; Tech News Digest</h1>
+          <p style="margin:10px 0 0; color:#dbeafe; font-size:14px;">{{ digest_date }}</p>
+        </td></tr>
+        <tr><td style="padding:26px 32px 32px;">
+          {% if top_stories %}<h2 style="margin:0 0 16px; font-size:19px; color:#172554;">Top stories</h2>
+          {% for story in top_stories %}<div style="padding:0 0 19px; margin:0 0 19px; border-bottom:1px solid #e5eaf1;">
+            <p style="margin:0 0 7px; color:#64748b; font-size:12px;">#{{ story.rank }}{% if story.category %} &nbsp;·&nbsp; {{ story.category }}{% endif %}{% if story.breaking %} &nbsp;·&nbsp; <strong style="color:#b91c1c;">BREAKING</strong>{% endif %}</p>
+            <h3 style="margin:0 0 8px; font-size:17px; line-height:1.4;">{% set story_url = story.url|safe_url %}{% if story_url %}<a href="{{ story_url }}" style="color:#1d4ed8; text-decoration:none;">{{ story.title }}</a>{% else %}{{ story.title }}{% endif %}</h3>
+            <p style="margin:0 0 7px; color:#475569; font-size:13px;">{{ story.source }}{% if story.score is defined %} &nbsp;·&nbsp; Score {{ story.score }}/10{% endif %}</p>
+            {% if story.summary %}<p style="margin:0; color:#334155; font-size:14px; line-height:1.65;">{{ story.summary }}</p>{% endif %}
+            {% if story.related_sources %}<p style="margin:9px 0 0; color:#64748b; font-size:12px;">Also covered by: {% for related in story.related_sources %}{% set related_url = related.url|safe_url %}{% if related_url %}<a href="{{ related_url }}" style="color:#2563eb;">{{ related.source }}</a>{% else %}{{ related.source }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+          </div>{% endfor %}{% else %}<h2 style="margin:0 0 8px; font-size:19px; color:#172554;">Top stories</h2><p style="margin:0 0 24px; color:#64748b;">No top stories were available for this digest.</p>{% endif %}
+
+          {% if blog_spotlight %}<h2 style="margin:26px 0 12px; font-size:19px; color:#172554;">Official blog highlights</h2>
+          {% for item in blog_spotlight %}<div style="padding:12px 0; border-top:1px solid #e5eaf1;"><h3 style="margin:0 0 5px; font-size:15px;">{% set blog_url = item.url|safe_url %}{% if blog_url %}<a href="{{ blog_url }}" style="color:#1d4ed8; text-decoration:none;">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3><p style="margin:0 0 5px; color:#64748b; font-size:12px;">{{ item.source }}</p>{% if item.summary %}<p style="margin:0; color:#334155; font-size:14px; line-height:1.6;">{{ item.summary }}</p>{% endif %}</div>{% endfor %}{% endif %}
+
+          {% if youtube_section %}<h2 style="margin:26px 0 12px; font-size:19px; color:#172554;">YouTube highlights</h2>
+          {% for item in youtube_section %}<div style="padding:12px 0; border-top:1px solid #e5eaf1;"><h3 style="margin:0 0 5px; font-size:15px;">{% set video_url = item.url|safe_url %}{% if video_url %}<a href="{{ video_url }}" style="color:#1d4ed8; text-decoration:none;">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3><p style="margin:0 0 5px; color:#64748b; font-size:12px;">{{ item.channel }}</p>{% if item.summary %}<p style="margin:0; color:#334155; font-size:14px; line-height:1.6;">{{ item.summary }}</p>{% endif %}</div>{% endfor %}{% endif %}
+
+          {% if stats %}<div style="margin-top:28px; padding:14px 16px; background:#f8fafc; border-radius:8px; color:#64748b; font-size:12px; line-height:1.7;"><strong style="color:#334155;">Run details</strong>{% if stats.total_collected is defined %} &nbsp;·&nbsp; {{ stats.total_collected }} items collected{% endif %}{% if stats.gemini_model %} &nbsp;·&nbsp; Model: {{ stats.gemini_model }}{% endif %}{% if stats.duration_ms is defined %} &nbsp;·&nbsp; {{ stats.duration_ms }} ms{% endif %}{% if stats.warnings %}<br><strong>Notes:</strong> {{ stats.warnings|join('; ') }}{% endif %}</div>{% endif %}
+        </td></tr>
+        <tr><td style="padding:16px 32px; background:#f8fafc; color:#94a3b8; font-size:11px; text-align:center;">Curated AI &amp; technology updates, in one place.</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

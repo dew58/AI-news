@@ -3,19 +3,20 @@ AI News Pipeline
 ----------------
 Orchestrates all phases of the digest:
   Phase 1 ✅ — Collect raw news items from all sources
-  Phase 2 🔜 — Analyze & rank with Google Gemini
-  Phase 3 🔜 — Build the HTML email digest
-  Phase 4 🔜 — Send via Gmail SMTP
+  Phase 2 ✅ — Analyze & rank with Google Gemini
+    Phase 3 ✅ — Build the HTML email digest
+    Phase 4 ✅ — Send via Gmail SMTP (or schedule daily runs)
 
 Run locally for testing:
-    python -m ai_news.pipeline          # full run
+    python -m ai_news.pipeline          # full run and email delivery
     python -m ai_news.pipeline --test   # collection only, prints results
+    python -m ai_news.pipeline --preview [digest.html]  # render without sending
+    python -m ai_news.pipeline --schedule  # run daily at DIGEST_TIME
 """
 
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -103,29 +104,26 @@ def collect(sources: dict) -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  PHASE 2 — Analysis  (stub — implemented in Phase 2)
+#  PHASE 2 — Analysis
 # ─────────────────────────────────────────────────────────────────────────────
 
-def analyze(items: list[dict]) -> list[dict]:
-    """
-    [Phase 2 — NOT YET IMPLEMENTED]
-    Send collected items to Google Gemini for ranking and summarization.
-    """
-    logger.info("━━━  Phase 2: Analysis  (stub — coming soon)  ━━━━━━━━━━━━━")
-    return items  # pass-through until Phase 2 is built
+def analyze(items: list[dict]) -> dict:
+    from ai_news.analyzer.news_analyzer import run
+
+    logger.info("━━━  Phase 2: Analysis  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    return run(items)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  PHASE 3 — Digest Build  (stub — implemented in Phase 3)
+#  PHASE 3 — Digest Build
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_digest(items: list[dict]) -> str:
-    """
-    [Phase 3 — NOT YET IMPLEMENTED]
-    Render the Jinja2 HTML email template from ranked items.
-    """
-    logger.info("━━━  Phase 3: Build Digest  (stub — coming soon)  ━━━━━━━━━")
-    return ""  # empty until Phase 3 is built
+def build_digest(digest_payload: dict) -> str:
+    """Render the Phase 2 digest payload into an HTML email."""
+    from ai_news.digest.email_builder import build_email
+
+    logger.info("━━━  Phase 3: Build Digest  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    return build_email(digest_payload)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -133,11 +131,34 @@ def build_digest(items: list[dict]) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def send(html: str) -> None:
-    """
-    [Phase 4 — NOT YET IMPLEMENTED]
-    Send the HTML digest via Gmail SMTP.
-    """
-    logger.info("━━━  Phase 4: Send Email  (stub — coming soon)  ━━━━━━━━━━━")
+    """Send the rendered digest via Gmail SMTP."""
+    from ai_news.delivery.gmail_sender import send_digest
+
+    logger.info("━━━  Phase 4: Send Email  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    send_digest(html)
+
+
+def run_pipeline(send_email: bool = True, preview_path: str | None = None) -> str:
+    """Run collection through rendering, then send or save an HTML preview."""
+    sources = _load_sources()
+    items = collect(sources)
+    digest_payload = analyze(items)
+    html = build_digest(digest_payload)
+    if preview_path is not None:
+        output_path = Path(preview_path).expanduser().resolve()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(html, encoding="utf-8")
+        logger.info("HTML digest preview saved to %s", output_path)
+    elif send_email:
+        send(html)
+    return html
+
+
+def run_schedule() -> None:
+    """Start a daily scheduler using DIGEST_TIME and DIGEST_TIMEZONE."""
+    from ai_news.scheduler.cron_runner import run_daily
+
+    run_daily(run_pipeline)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -151,12 +172,23 @@ def main() -> None:
         action="store_true",
         help="Run Phase 1 only and print collected items as JSON",
     )
+    parser.add_argument(
+        "--preview", nargs="?", const="digest-preview.html", metavar="PATH",
+        help="Run collection, analysis, and rendering; save HTML without sending (default: digest-preview.html)",
+    )
+    parser.add_argument("--schedule", action="store_true", help="Schedule daily email using DIGEST_TIME and DIGEST_TIMEZONE")
     args = parser.parse_args()
 
-    sources = _load_sources()
+    if args.schedule:
+        run_schedule()
+        return
 
     # Phase 1
-    items = collect(sources)
+    if args.preview is not None:
+        run_pipeline(send_email=False, preview_path=args.preview)
+        return
+
+    items = collect(_load_sources())
 
     if args.test:
         # Write UTF-8 directly to stdout binary buffer to avoid Windows cp1252 errors
@@ -166,13 +198,8 @@ def main() -> None:
         logger.info("--test mode: stopping after collection.")
         return
 
-    # Phase 2
-    ranked = analyze(items)
-
-    # Phase 3
-    html = build_digest(ranked)
-
-    # Phase 4
+    digest_payload = analyze(items)
+    html = build_digest(digest_payload)
     send(html)
 
     logger.info("✅  Pipeline complete.")
